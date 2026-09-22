@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senk Craft — Minecraft сервер</title>
+<meta name="description" content="Senk Craft — ванильный Minecraft сервер (Java / Bedrock 1.16.5 - 1.21.11) для вайбового выживания с друзьями.">
+<meta name="theme-color" content="#12141a">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj4KICA8cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIGZpbGw9IiM2ZjUyMzMiLz4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMzIiIGhlaWdodD0iOSIgZmlsbD0iIzVmOGYzYyIvPgogIDxyZWN0IHg9IjQiIHk9IjkiIHdpZHRoPSIzIiBoZWlnaHQ9IjIiIGZpbGw9IiM1ZjhmM2MiLz4KICA8cmVjdCB4PSIxMiIgeT0iOSIgd2lkdGg9IjQiIGhlaWdodD0iMiIgZmlsbD0iIzVmOGYzYyIvPgogIDxyZWN0IHg9IjIyIiB5PSI5IiB3aWR0aD0iMyIgaGVpZ2h0PSIyIiBmaWxsPSIjNWY4ZjNjIi8+CiAgPHJlY3QgeD0iNyIgeT0iMTYiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiM1YzQzMmEiLz4KICA8cmVjdCB4PSIxOCIgeT0iMjEiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiM4MzYyMzgiLz4KICA8cmVjdCB4PSIyNCIgeT0iMTQiIHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IiM1YzQzMmEiLz4KPC9zdmc+Cg==">
+
+<!-- Шрифт -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<!-- Иконки -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* =========================================================
+   theme.css — дизайн-токены (единственный источник правды
+   для цветов, теней и радиусов). Правки стиля — здесь.
+   ========================================================= */
+:root {
+  /* Поверхности */
+  --bg-base: #12141a;
+  --bg-panel: rgba(30, 25, 22, 0.74);
+
+  /* Границы */
+  --border: rgba(255, 236, 214, 0.09);
+  --border-hover: rgba(255, 236, 214, 0.20);
+
+  /* Текст */
+  --text: #eae6e0;
+  --text-muted: #9a9188;
+
+  /* Акцент */
+  --accent: #6c8cff;
+  --accent-dim: rgba(108, 140, 255, 0.12);
+  --accent-hover: rgba(108, 140, 255, 0.18);
+  --accent-border: rgba(108, 140, 255, 0.28);
+  --accent-border-hover: rgba(108, 140, 255, 0.45);
+
+  /* Предупреждение */
+  --danger: #e06c75;
+
+  /* Геометрия */
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  /* Тени */
+  --shadow-panel:
+    0 24px 60px -24px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 236, 214, 0.04);
+
+  /* Слои (z-index) */
+  --z-bg: 0;
+  --z-overlay: 1;
+  --z-weather: 2;
+  --z-page: 3;
+}
+
+/* =========================================================
+   base.css — сброс, типографика и фоновые слои.
+   ========================================================= */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  background: var(--bg-base);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Фоновый холст (тайлы земли) ===== */
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-bg);
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ===== Затемняющий оверлей поверх фона ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 30%,
+      rgba(10, 12, 16, 0.22) 0%,
+      rgba(10, 12, 16, 0.68) 60%,
+      rgba(8, 10, 13, 0.90) 100%),
+    linear-gradient(180deg,
+      rgba(10, 12, 16, 0.50) 0%,
+      rgba(10, 12, 16, 0.16) 35%,
+      rgba(10, 12, 16, 0.62) 100%);
+}
+
+/* ===== Холст осадков ===== */
+#weather {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-weather);
+  pointer-events: none;
+}
+
+/* ===== Каркас страницы ===== */
+.page {
+  position: relative;
+  z-index: var(--z-page);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.hidden { display: none; }
+
+/* =========================================================
+   components.css — панель, кнопки, погода, правила, донат.
+   ========================================================= */
+
+/* ===== Панель ===== */
+.container {
+  width: 90%;
+  max-width: 520px;
+  padding: 44px 28px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: var(--shadow-panel);
+}
+
+.logo {
+  font-size: 26px;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 3px;
+}
+
+.desc {
+  margin: 26px 0 0 0;
+  font-size: 9px;
+  line-height: 1.9;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ===== Акцент: Java / Bedrock ===== */
+.platforms {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.platforms__text {
+  font-size: 9px;
+  color: var(--text);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--accent-dim);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.05);
+}
+
+/* ===== Акцент: диапазон версий ===== */
+.versions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 8px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.versions::before,
+.versions::after {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-border));
+}
+
+.versions::after {
+  background: linear-gradient(90deg, var(--accent-border), transparent);
+}
+
+/* ===== Кнопки ===== */
+.buttons {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.btn {
+  padding: 20px 22px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 240, 220, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  font-size: 10px;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 240, 220, 0.06);
+  border-color: var(--border-hover);
+}
+
+.btn:active { transform: translateY(0); }
+
+.btn i {
+  color: var(--accent);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.btn-small {
+  font-size: 8px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Первичная кнопка (с подписью сверху) */
+.btn--primary {
+  flex-direction: column;
+  justify-content: center;
+  height: 62px;
+  padding: 12px 20px;
+  gap: 6px;
+  align-items: flex-start;
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-border-hover);
+}
+
+/* ===== Переключатель погоды ===== */
+.weather {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  font-size: 9px;
+}
+
+.weather__option {
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s;
+  user-select: none;
+  padding: 6px 4px;
+  letter-spacing: 0.5px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.weather__option:hover { color: var(--text); }
+
+.weather__option.is-active {
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+
+/* ===== Правила ===== */
+.rules {
+  text-align: left;
+  font-size: 9px;
+  line-height: 2;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  color: var(--text-muted);
+}
+
+.rules h2 {
+  text-align: center;
+  color: var(--text);
+  margin-bottom: 24px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.rules::-webkit-scrollbar { width: 4px; }
+.rules::-webkit-scrollbar-track { background: transparent; }
+.rules::-webkit-scrollbar-thumb { background: rgba(255, 236, 214, 0.12); border-radius: 2px; }
+
+/* ===== Донат ===== */
+.donat-container {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.donat-square {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 240, 220, 0.03);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.donat-square .btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 9px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  display: inline-flex;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.donat-square .btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.donat-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.donat-title {
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.price-discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donat-price {
+  font-size: 8px;
+  background: rgba(255, 240, 220, 0.06);
+  padding: 5px 8px;
+  border-radius: 6px;
+  text-align: center;
+  width: fit-content;
+  color: var(--text);
+}
+
+.donat-discount {
+  font-size: 8px;
+  color: var(--danger);
+}
+
+/* ===== Кнопка "наверх / назад" ===== */
+.up-btn {
+  margin-top: 16px;
+  display: inline-block;
+  font-size: 9px;
+  cursor: pointer;
+  color: var(--text-muted);
+  text-decoration: underline;
+  user-select: none;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.up-btn:hover { color: var(--text); }
+
+/* Ряд кнопок навигации под правилами */
+.page-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="overlay" aria-hidden="true"></div>
+<canvas id="weather" aria-hidden="true"></canvas>
+
+<!-- ГЛАВНАЯ -->
+<main class="page" id="main">
+  <div class="container">
+    <h1 class="logo">SENK CRAFT</h1>
+
+    <p class="desc">
+      Ванильный сервер для вайбового выживания с друзьями.<br>
+      Строй, развивайся и воплощай
+    </p>
+
+    <div class="platforms"><span class="platforms__text">Java / Bedrock</span></div>
+    <div class="versions">1.16.5 - 1.21.11</div>
+
+    <nav class="buttons">
+      <a class="btn btn--primary" href="https://t.me/SenkCraft" target="_blank" rel="noopener">
+        <span class="btn-small">IP тут ↓</span>
+        <span><i class="fa-brands fa-telegram"></i> Канал сервера</span>
+      </a>
+
+      <a class="btn" href="https://t.me/SenkChat" target="_blank" rel="noopener">
+        <i class="fa-brands fa-telegram"></i> Чат сервера
+      </a>
+
+      <a class="btn" href="https://www.tiktok.com/@Senk_Chat" target="_blank" rel="noopener">
+        <i class="fa-brands fa-tiktok"></i> Тикток сервера
+      </a>
+
+      <button class="btn" type="button" data-action="open-rules">
+        <i class="fa-solid fa-book"></i> Правила сервера
+      </button>
+      <button class="btn" type="button" data-action="open-donat">
+        <i class="fa-solid fa-ruble-sign"></i> Донат
+      </button>
+      <a class="btn" href="https://t.me/SanyaDur" target="_blank" rel="noopener">
+        <i class="fa-solid fa-user"></i> Связаться с поддержкой
+      </a>
+    </nav>
+
+    <div class="weather" role="group" aria-label="Эффекты погоды">
+      <button class="weather__option" type="button" data-weather="rain">Дождь</button>
+      <button class="weather__option" type="button" data-weather="snow">Снег</button>
+      <button class="weather__option is-active" type="button" data-weather="off">Выкл</button>
+    </div>
+  </div>
+</main>
+
+<!-- ПРАВИЛА -->
+<section class="page hidden" id="rules">
+  <div class="container">
+    <div class="rules" id="rulesText">
+      <h2>Правила сервера</h2>
+      1. Запрещены оскорбления в адрес администрации, а также любые формы неуважительного или провокационного поведения по отношению к ней.<br><br>
+      2. Запрещены оскорбления игроков, переходы на личности, унижение достоинства, а также оскорбления родственников и близких лиц.<br><br>
+      3. Запрещено чрезмерное использование нецензурной, обсценной и вульгарной лексики, а также завуалированный мат в чате.<br><br>
+      4. Запрещено обсуждение политики в любом виде и в любом контексте.<br><br>
+      5. Запрещены спам, флуд и засорение чата бессмысленными сообщениями.<br><br>
+      6. Запрещено использование читов, макросов, стороннего программного обеспечения, а также чит-текстурпаков, дающих игровое преимущество.<br><br>
+      7. Запрещено использование багов, дюпов, эксплойтов и иных недоработок сервера в личных целях.<br><br>
+      8. Запрещено гриферство в любых его проявлениях.<br><br>
+      9. Запрещено нанесение урона другим игрокам вне предусмотренных сервером механик.<br><br>
+      10. Запрещены воровство, разрушение построек и убийства игроков.<br><br>
+      11. PvP запрещено во всех зонах сервера, за исключением специально отведённой арены.<br><br>
+      12. Решение главы администрации является окончательным и не подлежит оспариванию.<br><br>
+      13. Запрещены попытки обмана администрации, введение её в заблуждение, а также сокрытие совершённых нарушений.<br><br>
+      14. Администрация вправе выдать наказание, исходя из конкретной ситуации и степени нарушения.<br><br>
+      15. Незнание правил не освобождает игрока от ответственности.<br><br>
+      16. Правила сервера могут быть изменены без предварительного уведомления.<br><br>
+      17. Администрация не несёт ответственности за утерю ресурсов, предметов и построек игроков.<br><br>
+      18. Играя на сервере, игрок автоматически соглашается со всеми правилами, а также с политикой конфиденциальности и условиями использования.
+    </div>
+    <div class="page-actions">
+      <button class="up-btn" type="button" data-action="scroll-rules-top">↑ Наверх</button>
+      <button class="up-btn" type="button" data-action="go-main">← Главное меню</button>
+    </div>
+  </div>
+</section>
+
+<!-- ДОНАТ -->
+<section class="page hidden" id="donat">
+  <div class="container donat-container">
+    <div class="donat-square">
+      <div class="donat-info">
+        <div class="donat-title"><i class="fa-solid fa-circle-check"></i> Разбан</div>
+        <div class="price-discount">
+          <div class="donat-price">799₽</div>
+          <div class="donat-discount">-30%</div>
+        </div>
+      </div>
+      <a href="https://t.me/SanyaDur" target="_blank" rel="noopener" class="btn">Купить</a>
+    </div>
+
+    <div class="donat-square">
+      <div class="donat-info">
+        <div class="donat-title"><i class="fa-solid fa-microphone-slash"></i> Размут</div>
+        <div class="price-discount">
+          <div class="donat-price">299₽</div>
+          <div class="donat-discount">-10%</div>
+        </div>
+      </div>
+      <a href="https://t.me/SanyaDur" target="_blank" rel="noopener" class="btn">Купить</a>
+    </div>
+
+    <button class="up-btn" type="button" data-action="go-main">← Главное меню</button>
+  </div>
+</section>
+
+<script>
+/* =========================================================
+   utils — общие утилиты (глобальная область SC).
+   ========================================================= */
+window.SC = window.SC || {};
+
+(function (SC) {
+  'use strict';
+
+  /* Детерминированный ГПСЧ — текстура фона всегда одинаковая. */
+  SC.mulberry32 = function (a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  };
+
+  /* Классический debounce для обработчиков resize. */
+  SC.debounce = function (fn, wait) {
+    var timer;
+    return function () {
+      clearTimeout(timer);
+      timer = setTimeout(fn, wait);
+    };
+  };
+
+  /* Ограничение значения диапазоном [min, max]. */
+  SC.clamp = function (v, min, max) {
+    return v < min ? min : v > max ? max : v;
+  };
+})(window.SC);
+
+/* =========================================================
+   config — настройки окружения и палитра фона.
+   ========================================================= */
+(function (SC) {
+  'use strict';
+
+  /* Плотность пикселей ограничена 2x — баланс чёткости и скорости. */
+  SC.DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  /* Палитра травы и земли для тайла "блок травы". */
+  SC.PALETTE = {
+    grass: [
+      [82, 122, 52], [90, 133, 57], [99, 145, 63],
+      [108, 156, 70], [118, 168, 78]
+    ],
+    dirt: [
+      [102, 81, 51], [112, 90, 57], [122, 99, 63],
+      [132, 108, 70], [142, 118, 78]
+    ],
+    grassAccent: { light: [128, 178, 88], dark: [70, 106, 44] },
+    dirtAccent: { light: [152, 128, 86], dark: [92, 73, 46] },
+    grassCluster: { light: [112, 162, 74], dark: [74, 112, 46] },
+    dirtCluster: { light: [140, 116, 78], dark: [96, 77, 49] }
+  };
+})(window.SC);
+
+/* =========================================================
+   background — фоновый холст "грунт".
+
+   Трава рисуется ОДИН раз в самой верхней полосе экрана.
+   Вся площадь ниже — бесшовный тайл чистой земли без травы,
+   поэтому вертикальных повторов травы ("второй слой") нет.
+   ========================================================= */
+(function (SC) {
+  'use strict';
+
+  var canvas = document.getElementById('bg');
+  if (!canvas) return;
+
+  var ctx = canvas.getContext('2d', { alpha: false });
+  var TEX = 32;                                    // сторона тайла в "пикселях"
+  var rnd = SC.mulberry32(20240917);
+  var P = SC.PALETTE;
+
+  function pick(list) { return list[(rnd() * list.length) | 0]; }
+
+  function makeCanvas(size) {
+    var c = document.createElement('canvas');
+    c.width = c.height = size;
+    return c;
+  }
+
+  function pixelSetter(d, size) {
+    return function (px, py, rgb, jitter) {
+      var i = (py * size + px) * 4;
+      var j = jitter ? Math.round((rnd() - 0.5) * 14) : 0;
+      d[i]     = SC.clamp(rgb[0] + j, 0, 255);
+      d[i + 1] = SC.clamp(rgb[1] + j, 0, 255);
+      d[i + 2] = SC.clamp(rgb[2] + j, 0, 255);
+      d[i + 3] = 255;
+    };
+  }
+
+  // Бесшовный тайл чистой земли: базовая палитра + вкрапления.
+  function buildDirtTile(size) {
+    var c = makeCanvas(size);
+    var g = c.getContext('2d');
+    var img = g.createImageData(size, size);
+    var set = pixelSetter(img.data, size);
+
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        set(x, y, pick(P.dirt), true);
+      }
+    }
+
+    var specks = (size * size / 5) | 0;
+    for (var s = 0; s < specks; s++) {
+      var bright = rnd() < 0.5;
+      set((rnd() * size) | 0, (rnd() * size) | 0,
+          bright ? P.dirtAccent.light : P.dirtAccent.dark, true);
+    }
+
+    var clusters = (size * size / 26) | 0;
+    for (var k = 0; k < clusters; k++) {
+      var cx = (rnd() * size) | 0;
+      var cy = (rnd() * size) | 0;
+      var horiz = rnd() < 0.5;
+      var wdt = horiz ? 2 : 1;
+      var hgt = horiz ? 1 : 2;
+      var col = rnd() < 0.5 ? P.dirtCluster.dark : P.dirtCluster.light;
+      for (var yy = 0; yy < hgt; yy++) {
+        for (var xx = 0; xx < wdt; xx++) {
+          set((cx + xx) % size, (cy + yy) % size, col, true);
+        }
+      }
+    }
+
+    g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  // Верхняя полоса: неровная кромка травы сверху, земля ниже.
+  function buildTopTile(size) {
+    var c = makeCanvas(size);
+    var g = c.getContext('2d');
+    var img = g.createImageData(size, size);
+    var set = pixelSetter(img.data, size);
+
+    var edge = new Uint8Array(size);
+    for (var x = 0; x < size; x++) {
+      edge[x] = 4 + ((rnd() * 4) | 0);
+    }
+
+    for (var y = 0; y < size; y++) {
+      for (var x2 = 0; x2 < size; x2++) {
+        var e = edge[x2];
+        var col;
+        if (y < e) {
+          col = pick(P.grass);
+        } else if (y <= e + 1) {
+          col = rnd() < 0.55 ? pick(P.grass) : pick(P.dirt);
+        } else {
+          col = pick(P.dirt);
+        }
+        set(x2, y, col, true);
+      }
+    }
+
+    var specks = (size * size / 5) | 0;
+    for (var s = 0; s < specks; s++) {
+      var sx = (rnd() * size) | 0;
+      var sy = (rnd() * size) | 0;
+      var isGrass = sy < edge[sx] + 2;
+      var bright = rnd() < 0.5;
+      var accent = isGrass
+        ? (bright ? P.grassAccent.light : P.grassAccent.dark)
+        : (bright ? P.dirtAccent.light : P.dirtAccent.dark);
+      set(sx, sy, accent, true);
+    }
+
+    var clusters = (size * size / 26) | 0;
+    for (var k = 0; k < clusters; k++) {
+      var cx = (rnd() * size) | 0;
+      var cy = (rnd() * size) | 0;
+      var horiz = rnd() < 0.5;
+      var wdt = horiz ? 2 : 1;
+      var hgt = horiz ? 1 : 2;
+      var dark = rnd() < 0.5;
+      for (var yy = 0; yy < hgt; yy++) {
+        for (var xx = 0; xx < wdt; xx++) {
+          var bx = (cx + xx) % size;
+          var by = (cy + yy) % size;
+          var onGrass = by < edge[bx] + 2;
+          var cluster = onGrass
+            ? (dark ? P.grassCluster.dark : P.grassCluster.light)
+            : (dark ? P.dirtCluster.dark : P.dirtCluster.light);
+          set(bx, by, cluster, true);
+        }
+      }
+    }
+
+    g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  var dirtTile = buildDirtTile(TEX);
+  var topTile = buildTopTile(TEX);
+
+  function draw() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var dw = Math.floor(w * SC.DPR);
+    var dh = Math.floor(h * SC.DPR);
+
+    canvas.width = dw;
+    canvas.height = dh;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.imageSmoothingEnabled = false;
+
+    var px = Math.max(2, Math.round((w < 700 ? 10 : 14) * SC.DPR));
+    var step = TEX * px;
+
+    // Один ряд травы строго вверху экрана.
+    for (var x = 0; x < dw; x += step) {
+      ctx.drawImage(topTile, x, 0, step, step);
+    }
+
+    // Вся площадь ниже — чистая земля без травы.
+    for (var y = step; y < dh; y += step) {
+      for (var x2 = 0; x2 < dw; x2 += step) {
+        ctx.drawImage(dirtTile, x2, y, step, step);
+      }
+    }
+  }
+
+  window.addEventListener('resize', SC.debounce(draw, 150));
+  draw();
+})(window.SC);
+
+/* =========================================================
+   weather — осадки (дождь / снег).
+
+   По умолчанию ВЫКЛЮЧЕНЫ. Анимация запускается только при
+   явном выборе пользователем, поэтому в состоянии "off"
+   никакой requestAnimationFrame не крутится.
+   ========================================================= */
+(function (SC) {
+  'use strict';
+
+  var canvas = document.getElementById('weather');
+  if (!canvas) return;
+
+  var ctx = canvas.getContext('2d');
+  var buttons = document.querySelectorAll('[data-weather]');
+
+  var w = 0, h = 0;
+  var particles = [];
+  var mode = 'off';
+  var rafId = null;
+  var running = false;
+
+  function resize() {
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = Math.floor(w * SC.DPR);
+    canvas.height = Math.floor(h * SC.DPR);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(SC.DPR, 0, 0, SC.DPR, 0, 0);
+    if (mode !== 'off') createParticles(mode);
+  }
+
+  function createParticles(type) {
+    var count = type === 'snow' ? 90 : 110;
+    particles = [];
+    for (var i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: type === 'snow' ? Math.random() * 2 + 1 : 0,
+        l: type === 'rain' ? Math.random() * 6 + 6 : 0,
+        sx: type === 'snow' ? (Math.random() - 0.5) * 0.3 : 0,
+        sy: type === 'snow' ? Math.random() * 0.6 + 0.4 : Math.random() * 1.2 + 1
+      });
+    }
+  }
+
+  function frame() {
+    if (!running) return;
+    ctx.clearRect(0, 0, w, h);
+
+    if (mode === 'snow') {
+      ctx.fillStyle = 'rgba(220, 225, 235, 0.7)';
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        p.x += p.sx;
+        p.y += p.sy;
+
+        if (p.y > h) { p.y = -10; p.x = Math.random() * w; }
+        if (p.x < -10) p.x = w + 10;
+        else if (p.x > w + 10) p.x = -10;
+      }
+    } else if (mode === 'rain') {
+      ctx.strokeStyle = 'rgba(180, 190, 210, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (var j = 0; j < particles.length; j++) {
+        var q = particles[j];
+        ctx.moveTo(q.x, q.y);
+        ctx.lineTo(q.x, q.y + q.l);
+
+        q.y += q.sy;
+        if (q.y > h) { q.y = -10; q.x = Math.random() * w; }
+      }
+      ctx.stroke();
+    }
+
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function stop() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    ctx.clearRect(0, 0, w, h);
+  }
+
+  function syncButtons() {
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.toggle('is-active', buttons[i].dataset.weather === mode);
+    }
+  }
+
+  function set(type) {
+    if (type === mode) return;
+    mode = type;
+    syncButtons();
+
+    if (type === 'off') {
+      particles = [];
+      stop();
+    } else {
+      createParticles(type);
+      start();
+    }
+  }
+
+  for (var b = 0; b < buttons.length; b++) {
+    buttons[b].addEventListener('click', function () {
+      set(this.dataset.weather);
+    });
+  }
+
+  window.addEventListener('resize', SC.debounce(resize, 150));
+
+  resize();
+  syncButtons();          // подсветка "Выкл" при загрузке
+})(window.SC);
+
+/* =========================================================
+   navigation — переключение страниц (main / rules / donat)
+   и вспомогательные действия. Связано через data-атрибуты,
+   без инлайновых обработчиков в разметке.
+   ========================================================= */
+(function (SC) {
+  'use strict';
+
+  var pages = {
+    main: document.getElementById('main'),
+    rules: document.getElementById('rules'),
+    donat: document.getElementById('donat')
+  };
+  var rulesScroller = document.getElementById('rulesText');
+
+  function show(name) {
+    for (var key in pages) {
+      if (pages[key]) pages[key].classList.toggle('hidden', key !== name);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-action]') : null;
+    if (!t) return;
+
+    switch (t.dataset.action) {
+      case 'open-rules':  show('rules'); break;
+      case 'open-donat':  show('donat'); break;
+      case 'go-main':     show('main');  break;
+      case 'scroll-rules-top':
+        if (rulesScroller) rulesScroller.scrollTop = 0;
+        break;
+    }
+  });
+})(window.SC);
+</script>
+
+</body>
+</html>
